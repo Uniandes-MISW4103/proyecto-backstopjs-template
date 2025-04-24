@@ -1,0 +1,22 @@
+[
+  {
+    "label": "paleta de colores",
+    "url": "./backstop_sample/color-palette-target.png",
+    "referenceUrl": "https://monitor177.github.io/color-palette/",
+
+    "readyEvent": "",
+    "readySelector": "",
+
+    "delay": 0,
+    "hideSelectors": [],
+    "removeSelectors": [],
+    "hoverSelector": "",
+    "clickSelector": "",
+    "postInteractionWait": 0,
+    "selectors": [],
+    "selectorExpansion": true,
+    "expect": 0,
+    "misMatchThreshold": 0.1,
+    "requireSameDimensions": true
+  }
+]
