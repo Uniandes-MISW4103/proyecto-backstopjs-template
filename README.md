@@ -30,6 +30,7 @@ npm run test
 # Aprobación de resultados (actualización de referencia) utilizando el archivo backstop.js
 npm run approve
 ```
+**Nota:** Para la primera ejecución del proyecto deben primero ejecutar modo **approve** para tener una imagen base de comparación y luego ejecutar modo **test**, de otro modo les fallará la prueba al ejecutarla. 
 
 ## Configuración
 
