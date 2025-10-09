@@ -22,6 +22,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "prepare": "",
     "test": "backstop test --config=backstop.js",
     "approve": "backstop approve --config=backstop.js"
   },
