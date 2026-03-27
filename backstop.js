@@ -9,8 +9,8 @@ module.exports = {
       height: 400,
     },
   ],
-  onBeforeScript: "puppet/onBefore.js",
-  onReadyScript: "puppet/onReady.js",
+  onBeforeScript: "onBefore.js",
+  onReadyScript: "onReady.js",
   scenarios: scenarios,
   paths: {
     /**
