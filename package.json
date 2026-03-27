@@ -19,12 +19,13 @@
   ],
   "main": "backstop.js",
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "prepare": "",
+    "reference": "backstop reference --config=backstop.js",
     "test": "backstop test --config=backstop.js",
-    "test:ui": "backstop test --config=backstop.js",
+    "test:ui": "backstop openReport --config=backstop.js",
     "approve": "backstop approve --config=backstop.js"
   },
   "dependencies": {
