@@ -1,75 +1,102 @@
-# Proyecto Base: VRT con BackstopJs
+# Proyecto Base: Pruebas de Regresión Visual (VRT) con BackstopJS
 
-BackstopJs es un framework utilizado para realizar pruebas de regresión visual. Ofrece una interfaz intuitiva, al igual que posible integraciones con Playwright y Puppeteer.
+[BackstopJS](https://github.com/garris/BackstopJS) automatiza la regresión visual: toma capturas de
+pantalla de una lista de escenarios (páginas y estados), las compara con un conjunto de imágenes de
+referencia aprobadas y genera un reporte con las diferencias. Usa Puppeteer o Playwright para
+controlar el navegador.
 
-Este repositorio cuenta con la configuración base de Backstop para la automatización de VRT para el proyecto del curso. Para mayor información, consultar la [documentación oficial](https://github.com/garris/BackstopJS) de la herramienta
+Este módulo contiene la configuración base de BackstopJS y un escenario de ejemplo que pueden usar
+como punto de partida para comparar versiones de la aplicación del proyecto.
 
-## Requisitos Básicos
+## Requisitos
 
-- Node.js (versión 22 o superior). Recomendamos utilizar la versión `lts/jod`.
-- npm para la gestión de dependencias.
+- Node.js 24 (`lts/krypton`). El módulo incluye un `.nvmrc`, por lo que pueden usar `nvm use`.
+- npm (incluido con Node.js).
+- Navegador: al instalar, Puppeteer (dependencia de BackstopJS) descarga Chrome for Testing en
+  `~/.cache/puppeteer`.
 
 ## Instalación
 
-Desde la **raíz del repositorio**:
+Desde la **raíz del repositorio** del proyecto:
 
 ```bash
 npm run backstopjs:install
 ```
 
-O bien, desde el directorio del módulo:
+`backstopjs:prepare` existe por consistencia con los demás módulos, pero no hace nada: el navegador
+se descarga durante la instalación.
 
-```bash
-npm install
+> [!IMPORTANT]
+> Instalen siempre desde la raíz. `backstopjs:install` deja las dependencias del módulo en su propia
+> carpeta `node_modules`, aisladas de los demás módulos. Un `npm install` dentro de la carpeta del
+> módulo instala en la raíz del repositorio y modifica el `package-lock.json` raíz sin ese aislamiento.
+
+## Ejecución
+
+| Acción | Desde la raíz | Desde `vrt/misw-4103-backstopjs` |
+|---|---|---|
+| Capturar las imágenes de referencia | `npm run backstopjs:reference` | `npm run reference` |
+| Capturar y comparar contra la referencia | `npm run backstopjs:test` | `npm test` |
+| Aprobar el último resultado como nueva referencia | `npm run backstopjs:approve` | `npm run approve` |
+| Abrir el último reporte | `npm run backstopjs:ui` | `npm run test:ui` |
+
+El flujo habitual es: `reference` una vez (o cuando cambie la versión base), `test` en cada
+comparación, y `approve` solo cuando las diferencias encontradas sean cambios esperados.
+
+## Estructura
+
+```plaintext
+misw-4103-backstopjs/
+├── .nvmrc
+├── package.json
+├── backstop.js                 # configuración de BackstopJS
+├── backstop_scenarios.json     # lista de escenarios a comparar
+└── backstop_data/
+    └── scripts/                # onBefore.js y onReady.js (se ejecutan en cada escenario)
 ```
 
-## Ejecución de Pruebas
-
-Desde la **raíz del repositorio**:
-
-```bash
-# Capturar imágenes de referencia (primera ejecución o al actualizar la base)
-npm run backstopjs:reference
-```
-
-```bash
-# Ejecución de las pruebas de regresión visual
-npm run backstopjs:test
-```
-
-```bash
-# Aprobación de resultados (actualización de referencia a partir de los resultados del test)
-npm run backstopjs:approve
-```
-
-```bash
-# Abrir el último reporte HTML generado
-npm run backstopjs:ui
-```
-
-**Nota:** En la primera ejecución del proyecto deben capturar primero las imágenes base con `backstopjs:reference` y luego ejecutar `backstopjs:test`. El comando `backstopjs:approve` se usa para reemplazar las imágenes de referencia con los resultados del último test.
+Al ejecutar se generan, dentro de `backstop_data/`, `bitmaps_reference/`, `bitmaps_test/`,
+`html_report/` y `ci_report/` (todas en el `.gitignore`).
 
 ## Configuración
 
-1. **`backstop.js`**: Este archivo contiene la configuración principal de Backstop. En este caso, se define el `id`, las dimensiones (`vierports`), y los escenarios de prueba (`scenarios`):
-
-   ```javascript
-   id: "backstop",
-   /** Actualice las dimensiones antes de ejecutar las pruebas de regresión */
-   viewports: [
-       {
-       label: "browser",
-       width: 750,
-       height: 400,
-       },
-   ],
-   scenarios: [],
-   ...
-   ```
-
-2. **`backstop_scenarios.json`**: Archivo con la lista de escenarios de comparación para la regresión visual. **Importante**: deben implementar un script que genere la lista de escenarios
+- **`backstop.js`**:
+  - `viewports`: tamaños de pantalla en los que se captura cada escenario (por defecto 750×400).
+  - `scenarios`: se cargan desde `backstop_scenarios.json`.
+  - `onBeforeScript` / `onReadyScript`: scripts de `backstop_data/scripts/` que se ejecutan antes de
+    cargar la página y cuando está lista (por ejemplo, para iniciar sesión o cerrar un aviso).
+  - `report`: reporte HTML (`browser`, se abre al terminar `test`) y reporte JUnit XML (`CI`, en
+    `backstop_data/ci_report/`).
+  - `engine`: `puppeteer`, con `--no-sandbox` para poder ejecutarse en contenedores.
+- **`backstop_scenarios.json`**: cada escenario define `label`, `url` (versión a probar),
+  `referenceUrl` (versión de referencia), selectores a capturar u ocultar, interacciones previas
+  (`clickSelector`, `hoverSelector`) y el umbral de diferencia `misMatchThreshold` (en %).
 
 > [!IMPORTANT]
-> **Importante:** Recuerden que la ejecución de pruebas de regresión visual debe ser automatizada! Es decir, se espera que implementen un script para configurar la lista de escenarios antes de ejecutar las pruebas (tanto para el _setup_ de imágenes base como referencia, como para las imágenes de prueba)
+> La regresión visual debe estar automatizada: escriban un script que genere
+> `backstop_scenarios.json` (por ejemplo, con `referenceUrl` apuntando a la versión anterior de
+> Ghost y `url` a la nueva) antes de ejecutar `reference` y `test`.
 
-Asegúrate de revisar y personalizar estas configuraciones según las necesidades de tu proyecto.
+## Ejemplo incluido
+
+Un escenario sobre `https://monitor177.github.io/color-palette/` con la misma URL como referencia y
+como prueba. `reference` captura la página y `test` la vuelve a capturar y compara con un umbral de
+0,1 %; como la paleta solo cambia al hacer clic en "Generar nueva paleta", la prueba pasa. Para ver
+una diferencia, agreguen `"clickSelector": "#generate"` al escenario y ejecuten `test` de nuevo.
+
+## Solución de problemas
+
+- **`Could not find Chrome (ver. …)`**: la descarga del navegador no se ejecutó durante la
+  instalación; ejecuten `npx puppeteer browsers install chrome` desde la carpeta del módulo.
+- **`npm warn deprecated puppeteer@22…`**: BackstopJS 6.3.25 (su última versión) depende de
+  Puppeteer 22; la advertencia es esperada.
+- **Las capturas de referencia y de prueba difieren en todo el texto**: se tomaron en sistemas
+  operativos distintos (las fuentes se dibujan diferente). Tomen ambas en el mismo entorno.
+- **Linux ARM64**: Chrome for Testing no tiene versión para esa plataforma; instalen Chromium del
+  sistema y definan `PUPPETEER_EXECUTABLE_PATH` (por ejemplo `/usr/bin/chromium`).
+- **Advertencia `EBADENGINE`**: están usando una versión de Node.js anterior a la 24.
+
+## Referencias
+
+- [BackstopJS](https://github.com/garris/BackstopJS)
+- [Configuración de escenarios](https://github.com/garris/BackstopJS#advanced-scenarios)
