@@ -19,7 +19,7 @@
   ],
   "main": "backstop.js",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24"
   },
   "scripts": {
     "prepare": "",
@@ -29,6 +29,6 @@
     "approve": "backstop approve --config=backstop.js"
   },
   "dependencies": {
-    "backstopjs": "^6.3.25"
+    "backstopjs": "~6.3.25"
   }
 }
