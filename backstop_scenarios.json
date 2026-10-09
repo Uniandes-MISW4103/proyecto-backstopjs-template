@@ -1,12 +1,11 @@
 [
   {
-    "label": "paleta de colores",
-    "url": "https://monitor177.github.io/color-palette/",
-    "referenceUrl": "https://monitor177.github.io/color-palette/",
-
+    "label": "registro",
+    "url": "https://angular-6-registration-login-example.stackblitz.io/register",
+    "referenceUrl": "https://angular-6-registration-login-example.stackblitz.io/register",
+    "onReadyScript": "stackblitz-register.js",
     "readyEvent": "",
     "readySelector": "",
-
     "delay": 0,
     "hideSelectors": [],
     "removeSelectors": [],
