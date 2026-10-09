@@ -49,16 +49,29 @@ comparación, y `approve` solo cuando las diferencias encontradas sean cambios e
 misw-4103-backstopjs/
 ├── .nvmrc
 ├── package.json
+├── abp.cjs                     # lee la configuración de la aplicación bajo pruebas (.env)
 ├── backstop.js                 # configuración de BackstopJS
 ├── backstop_scenarios.json     # lista de escenarios a comparar
 └── backstop_data/
-    └── scripts/                # onBefore.js y onReady.js (se ejecutan en cada escenario)
+    └── scripts/                # onBefore.js y onReady.js (se ejecutan en cada escenario) y
+                                # stackblitz-register.js (solo el del ejemplo)
 ```
 
 Al ejecutar se generan, dentro de `backstop_data/`, `bitmaps_reference/`, `bitmaps_test/`,
 `html_report/` y `ci_report/` (todas en el `.gitignore`).
 
 ## Configuración
+
+La URL de las dos versiones y el administrador de la aplicación bajo pruebas (ABP) están en el
+archivo `.env` de la raíz del repositorio, el mismo que usa `npm run abp:up` para desplegar Ghost. No
+los copien en el módulo: `abp.cjs` lee ese archivo. Las variables disponibles son `ABP_URL` (versión
+base), `ABP_RC_URL` (versión nueva), `ABP_ADMIN_NAME`, `ABP_ADMIN_EMAIL` y `ABP_ADMIN_PASSWORD`. Una
+variable de entorno con el mismo nombre tiene prioridad sobre el `.env`; fuera de un repositorio del
+proyecto (sin `.env`) se usan los valores por defecto de `abp.cjs`.
+
+Los scripts de `backstop_data/scripts/` la leen con `require("../../abp.cjs")`, por ejemplo para
+iniciar sesión antes de la captura; el script que genere `backstop_scenarios.json` puede usar
+`ABP_URL` y `ABP_RC_URL` de la misma forma.
 
 - **`backstop.js`**:
   - `viewports`: tamaños de pantalla en los que se captura cada escenario (por defecto 750×400).
@@ -70,19 +83,24 @@ Al ejecutar se generan, dentro de `backstop_data/`, `bitmaps_reference/`, `bitma
   - `engine`: `puppeteer`, con `--no-sandbox` para poder ejecutarse en contenedores.
 - **`backstop_scenarios.json`**: cada escenario define `label`, `url` (versión a probar),
   `referenceUrl` (versión de referencia), selectores a capturar u ocultar, interacciones previas
-  (`clickSelector`, `hoverSelector`) y el umbral de diferencia `misMatchThreshold` (en %).
+  (`clickSelector`, `hoverSelector`), el umbral de diferencia `misMatchThreshold` (en %) y, si lo
+  necesita, un `onReadyScript` propio en lugar de `onReady.js`.
 
 > [!IMPORTANT]
 > La regresión visual debe estar automatizada: escriban un script que genere
-> `backstop_scenarios.json` (por ejemplo, con `referenceUrl` apuntando a la versión anterior de
-> Ghost y `url` a la nueva) antes de ejecutar `reference` y `test`.
+> `backstop_scenarios.json` (por ejemplo, con `referenceUrl` en `ABP_URL` y `url` en `ABP_RC_URL`)
+> antes de ejecutar `reference` y `test`.
 
 ## Ejemplo incluido
 
-Un escenario sobre `https://monitor177.github.io/color-palette/` con la misma URL como referencia y
-como prueba. `reference` captura la página y `test` la vuelve a capturar y compara con un umbral de
-0,1 %; como la paleta solo cambia al hacer clic en "Generar nueva paleta", la prueba pasa. Para ver
-una diferencia, agreguen `"clickSelector": "#generate"` al escenario y ejecuten `test` de nuevo.
+Un escenario sobre la página de registro del demo
+[angular-6-registration-login-example](https://angular-6-registration-login-example.stackblitz.io) alojado en StackBlitz (no la ABP), con la misma URL
+como referencia y como prueba. Su `onReadyScript`, `stackblitz-register.js`, inicia el proyecto en
+StackBlitz y llena el formulario con el nombre, el correo y la contraseña de `ABP_ADMIN_*`: muestra
+cómo usar las credenciales del `.env` sin resolver las pruebas del proyecto. `reference` captura la
+página y `test` la vuelve a capturar y compara con un umbral de 0,1 %; como las dos capturas siguen
+los mismos pasos, la prueba pasa. Para ver una diferencia, cambien un valor del formulario en el
+script (por ejemplo, el nombre) y ejecuten `test` de nuevo.
 
 ## Solución de problemas
 
