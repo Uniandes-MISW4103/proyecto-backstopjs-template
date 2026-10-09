@@ -14,4 +14,8 @@ module.exports = async (page) => {
   await page.type('input[formcontrolname="lastName"]', lastName.join(" "));
   await page.type('input[formcontrolname="username"]', abp.ABP_ADMIN_EMAIL);
   await page.type('input[formcontrolname="password"]', abp.ABP_ADMIN_PASSWORD);
+
+  // Same capture on every run: no blinking caret and no StackBlitz loading overlay.
+  await page.evaluate(() => document.activeElement?.blur());
+  await page.waitForNetworkIdle({ idleTime: 500 });
 };
